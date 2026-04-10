@@ -1,83 +1,152 @@
-class task:
+import sys
+import time
+
+#Função para printar lentamente os títulos, imitando uma interface animada
+
+def print_animado(text, delay):
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+
+#Classe task com id auto-incremental, nome e prazo
+
+class Task:
     _id = 0
 
-    def __init__(self, name, dueDate):
-        task._id += 1
-        self.id = task._id
-        self.name = name
-        self.dueDate = dueDate
-        self.isCompleted = False
+    def __init__(self, name, due_date):
+        Task._id += 1
+        self.id = Task._id
+        self._name = name
+        self._due_date = due_date
+        self._completed = False
 
     @property
     def name(self):
         return self._name
     
     @name.setter
-    def name(self, name):
-        self._name = name
+    def name(self, value):
+        if not value:
+            raise ValueError("O nome não pode ser vazio.")
+        self._name = value
 
     @property
-    def dueDate(self):
-        return self._dueDate
+    def due_date(self):
+        return self._due_date
     
-    @dueDate.setter
-    def dueDate(self, dueDate):
-        self._dueDate = dueDate
+    @due_date.setter
+    def due_date(self, value):
+        self._due_date = value
 
     @property
-    def getid(self):
-        return self.id
+    def completed(self):
+        return self._completed
+    
+    @completed.setter
+    def completed(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Completed deve ser True ou False")
+        self._completed = value
+
+    def complete(self):
+        self.completed = True
 
     def __str__(self):
-        return f"A tarefa {self.id} chamada {self.name} tem o prazo de {self.dueDate}!"
-    
-    def completeTask(self):
-        task.isCompleted = True
+        status = "O Concluída" if self.completed else "X Pendente"
+        return f"[{self.id}] {self.name} | Prazo: {self.due_date} | {status}"
 
-class taskManager:
+#Classe gerenciador de tasks para agregar as tasks
+
+class TaskGerenciador:
     def __init__(self):
-        self.nome = "NoNotion"
         self.tasks = []
-    
-    def addTask(self, task):
+
+    def add_task(self, name, due_date):
+        task = Task(name, due_date)
         self.tasks.append(task)
-        print(f"{task.name}")
+        print(f"Tarefa '{name}' adicionada!")
 
-    def listarTarefas(self):
-        for tarefa in self.tarefas:
-            print(tarefa)
+    def list_tasks(self):
+        if not self.tasks:
+            print("Nenhuma tarefa cadastrada.")
+            return
 
-task1 = task("Pitch", "12/04/2026")
-task2 = task("Pitch+1", "13/04/2026")
-print(task1.getid)
+        for task in self.tasks:
+            print(task)
 
-print(task1)
-print(task2)
-taskManager = taskManager()
+    def complete_task(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.complete()
+                print(f"Tarefa {task_id} concluída!")
+                return
+        print("Tarefa não encontrada.")
+
+gerenciador = TaskGerenciador()
 
 menu = True
 
 while menu:
-    comando = input(f"""==============================
-    Gerenciador de Tarefas {taskManager.nome}
-    ==============================
-    1. Adicionar nova tarefa
-    2. Ver todas as tarefas
-    3. Concluir uma tarefa
-    4. Sair do programa\n""")
+    greetings = r"""
+_____ _____ _____ _____ _____ _____ _____
+ _____                     _       _
+|   __|___ ___ ___ ___ ___|_|___ _| |___ ___
+|  |  | -_|  _| -_|   |  _| | .'| . | . |  _|
+|_____|___|_| |___|_|_|___|_|__,|___|___|_|
+     _        _____             ___
+   _| |___   |_   _|___ ___ ___|  _|___ ___
+  | . | -_|    | | | .'|  _| -_|  _| .'|_ -|
+  |___|___|    |_| |__,|_| |___|_| |__,|___|
+     _____        _____     _   _
+    |   | |___   |   | |___| |_|_|___ ___
+    | | | | . |  | | | | . |  _| | . |   |
+    |_|___|___|  |_|___|___|_| |_|___|_|_|
+ _____ _____ _____ _____ _____ _____ _____"""
+    print_animado(greetings, 0.003)
+    comando = input("""
+1. Adicionar nova tarefa
+2. Ver todas as tarefas
+3. Concluir uma tarefa
+4. Sair do programa
+Escolha: """)
+
     match comando:
         case "1" | 1:
-            nome_tarefa = input(f"Coloque o nome da tarefa:" )
-            prazo_tarefa = input(f"Coloque o prazo da tarefa: ")
-            task = task(nome_tarefa, prazo_tarefa)
-            taskManager.addTask()
+            nome = input("Nome da tarefa: ")
+            prazo = input("Prazo: ")
+            gerenciador.add_task(nome, prazo)
+
         case "2" | 2:
-            taskManager.listarTarefas
+            gerenciador.list_tasks()
+
         case "3" | 3:
-            index = input(f"Qual é o index da tarefa que concluíste?")
-            task.completeTask()
+            try:
+                task_id = int(input("ID da tarefa a concluir: "))
+                gerenciador.complete_task(task_id)
+                gerenciador.list_tasks()
+                parabenizacao = """
+_____ _____ _____ _____ _____ _____ _____
+                                      __ 
+ _____             _                 |  |
+|  _  |___ ___ ___| |_ ___ ___ ___   |  |
+|   __| .'|  _| .'| . | -_|   |_ -|  |__|
+|__|  |__,|_| |__,|___|___|_|_|___|  |__|
+_____ _____ _____ _____ _____ _____ _____"""
+                print_animado(parabenizacao, 0.008)
+            except ValueError:
+                print("Por favor, insira um número válido.")
         case "4" | 4:
-            print(f"""==================================
-Obrigado por usar nossa aplicação!
-==================================""")
+            agradecimento = r"""
+_____ _____ _____ _____ _____ _____ _____
+                                    __
+ _____ _       _           _       |  |
+|     | |_ ___|_|___ ___ _| |___   |  |
+|  |  | . |  _| | . | .'| . | . |  |__|
+|_____|___|_| |_|_  |__,|___|___|  |__|
+                |___|
+_____ _____ _____ _____ _____ _____ _____"""
+            print_animado(agradecimento, 0.008)
             menu = False
+        case _:
+            print("Opção inválida.")
